@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"go-api/internal/controller"
+	"go-api/internal/middleware"
 	"go-api/internal/repo"
 	"go-api/internal/service"
 	"go-api/internal/utils"
@@ -42,9 +43,9 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	userController := controller.NewUserController(userService)
 
-	router.GET("/users", userController.GetAll)
+	router.GET("/users", middleware.AuthMiddleware(userRepo), userController.GetAll)
 	router.POST("/auth/register", userController.RegisterUser)
-	router.POST("/auth/login", userController.LoginUser)
-
+	router.POST("/auth/login", userController.Login)
+	router.POST("/auth/logout", userController.Logout)
 	router.Run(":8080")
 }

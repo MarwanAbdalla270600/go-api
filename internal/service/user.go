@@ -11,6 +11,7 @@ type UserServiceInterface interface {
 	GetAll() []entity.UserDTO
 	Register(request entity.RegisterRequest) error
 	Login(request entity.LoginRequest) (*entity.LoginResult, error)
+	Logout(session string) error
 }
 
 type userService struct {
@@ -66,4 +67,8 @@ func (s *userService) Login(request entity.LoginRequest) (*entity.LoginResult, e
 		},
 	}
 	return &result, nil
+}
+
+func (s *userService) Logout(session string) error {
+	return s.repo.DeleteSession(session)
 }

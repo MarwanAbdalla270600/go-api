@@ -15,6 +15,8 @@ type UserRepoInterface interface {
 	GetUserById(id int) (*entity.User, error)
 	GetUserByEmail(email string) (*entity.User, error)
 	StoreSession(session string, userId int) error
+	DeleteSession(session string) error
+	CheckSession(session string) bool
 }
 
 type userRepo struct {
@@ -62,4 +64,14 @@ func (r *userRepo) GetUserByEmail(email string) (*entity.User, error) {
 func (r *userRepo) StoreSession(session string, userId int) error {
 	_, err := r.redis.Set(r.ctx, session, userId, 60*time.Minute).Result()
 	return err
+}
+
+func (r *userRepo) DeleteSession(session string) error {
+	err := r.redis.Del(r.ctx, session).Err()
+	return err
+}
+
+func (r *userRepo) CheckSession(session string) bool {
+	_, err := r.redis.Get(r.ctx, session).Result()
+	return err == nil
 }

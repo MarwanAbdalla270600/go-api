@@ -20,7 +20,8 @@ func (c *userController) GetAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, c.service.GetAll())
 }
 
-func (c *userController) LoginUser(ctx *gin.Context) {
+func (c *userController) Login(ctx *gin.Context) {
+
 	var body entity.LoginRequest
 	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -47,6 +48,38 @@ func (c *userController) LoginUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Login successfull",
 		"data":    loginData.User,
+	})
+}
+
+func (c *userController) Logout(ctx *gin.Context) {
+	session, err := ctx.Cookie("session_id")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": "You are already logged out",
+		})
+		return
+	}
+
+	err = c.service.Logout(session)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+
+	ctx.SetCookie(
+		"session_id", // name must match the one you set at login
+		"",           // empty value
+		-1,           // MaxAge < 0 means delete immediately
+		"/",          // path
+		"localhost",  // domain
+		false,        // secure (HTTPS only in prod)
+		true,         // httpOnly
+	)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Logout successfull",
 	})
 }
 
